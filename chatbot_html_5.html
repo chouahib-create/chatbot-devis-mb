@@ -1,140 +1,147 @@
-/* /index.html 200
-/_redirects
-<!-- Chatbot HTML5, CSS et JS sans React - Version autonome -->
-<!DOCTYPE html>
+
+<!doctype html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Chatbot Rénovation</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>ARTI-DESIGN BOT — Estimation travaux</title>
   <style>
-    body { font-family: Arial, sans-serif; background:#f5f5f5; padding:20px; }
-    .card { max-width:500px; margin:auto; background:white; padding:20px; border-radius:15px; box-shadow:0 4px 12px rgba(0,0,0,0.1); }
-    button { width:100%; padding:12px; margin-top:10px; border:none; border-radius:8px; background:#007aff; color:white; cursor:pointer; }
-    button.secondary { background:#ddd; color:#333; }
-    .grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-    input { width:100%; padding:10px; border-radius:6px; border:1px solid #ccc; margin-top:10px; }
-    .room-block { background:#f0f0f0; padding:10px; border-radius:10px; margin-bottom:10px; }
+    :root{font-family:Inter, system-ui, Arial;--accent:#1767d1}
+    body{margin:0;background:#f6f8fb;color:#111}
+    .app{max-width:900px;margin:20px auto;padding:16px}
+    header{display:flex;align-items:center;gap:12px}
+    h1{font-size:20px;margin:0}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px}
+    .card{background:#fff;border-radius:12px;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 6px 18px rgba(20,20,40,0.06)}
+    .icon{font-size:36px;margin-bottom:8px}
+    button.cta{background:var(--accent);color:#fff;border:none;padding:10px 14px;border-radius:10px;font-weight:600}
+    .panel{margin-top:16px;background:#fff;padding:14px;border-radius:12px}
+    label{display:block;margin:8px 0;font-size:14px}
+    input[type=number]{width:120px;padding:8px;border-radius:8px;border:1px solid #ddd}
+    .row{display:flex;gap:8px;flex-wrap:wrap}
+    .small{font-size:13px;color:#666}
+    .summary{display:flex;justify-content:space-between;align-items:center;padding:12px;border-radius:10px;background:#f0f6ff;margin-top:10px}
   </style>
 </head>
 <body>
-
-<div id="app"></div>
-
-<script>
-// --- Données ---
-const ROOMS = ["Salon","Cuisine","Salle de bain","Chambre","WC","Couloir","Buanderie","Garage"];
-const SERVICES = {
-  "Salon":["Peinture","Électricité","Revêtement mural","Plâtrerie","Isolation"],
-  "Cuisine":["Installation cuisine","Électricité","Plomberie","Carrelage","Peinture"],
-  "Salle de bain":["Plomberie","Carrelage","Douche","Électricité","Peinture"],
-  "Chambre":["Peinture","Électricité","Parquet","Isolation","Placard / Dressing"],
-  "WC":["Plomberie","Peinture","Carrelage"],
-  "Couloir":["Peinture","Éclairage","Plâtrerie"],
-  "Buanderie":["Plomberie","Électricité","Sol","Peinture"],
-  "Garage":["Électricité","Isolation","Porte de garage","Peinture"]
-};
-
-let step = 0;
-let selectedRooms = [];
-let currentRoom = null;
-let selectedServices = {};
-let clientInfo = { nom:"", telephone:"", email:"" };
-
-function render() {
-  const app = document.getElementById("app");
-
-  // Étape 0 — Accueil
-  if (step === 0) {
-    app.innerHTML = `
-      <div class="card">
-        <h2>Bonjour 👋</h2>
-        <p>Je suis votre artisan tout corps d'état. Commençons votre devis ensemble.</p>
-        <button onclick="next()">Commencer</button>
-      </div>`;
-    return;
-  }
-
-  // Étape 1 — Choix des pièces
-  if (step === 1) {
-    app.innerHTML = `<div class='card'><h2>Quelles pièces souhaitez-vous rénover ?</h2>
-      <div class='grid'>
-        ${ROOMS.map(room => `
-          <button class="${selectedRooms.includes(room) ? '' : 'secondary'}" onclick="toggleRoom('${room}')">${room}</button>`).join("")}
+  <div class="app">
+    <header>
+      <div style="width:56px;height:56px;border-radius:12px;background:var(--accent);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">AD</div>
+      <div>
+        <h1>Estimez vos travaux • ARTI-DESIGN BOT</h1>
+        <div class="small">Simple, visuel et rapide — commencez en choisissant une pièce</div>
       </div>
-      ${selectedRooms.length>0 ? `<button onclick='next()'>Continuer</button>` : ''}
-    </div>`;
-    return;
-  }
+    </header>
 
-  // Étape 2 — Prestations par pièce
-  if (step === 2) {
-    if (!currentRoom) currentRoom = selectedRooms[0];
-    const services = SERVICES[currentRoom] || [];
+    <div class="grid" id="mainGrid">
+      <div class="card" data-piece="sdb" onclick="choosePiece('sdb')"><div class="icon">🛁</div><div>Salle de bain</div></div>
+      <div class="card" data-piece="cui" onclick="choosePiece('cui')"><div class="icon">🍽</div><div>Cuisine</div></div>
+      <div class="card" data-piece="ch" onclick="choosePiece('ch')"><div class="icon">🛏</div><div>Chambre</div></div>
+      <div class="card" data-piece="sal" onclick="choosePiece('sal')"><div class="icon">🛋</div><div>Salon</div></div>
+      <div class="card" data-piece="cou" onclick="choosePiece('cou')"><div class="icon">🚪</div><div>Couloir</div></div>
+      <div class="card" data-piece="tec" onclick="choosePiece('tec')"><div class="icon">🧰</div><div>Technique</div></div>
+    </div>
 
-    app.innerHTML = `
-      <div class='card'>
-        <h2>Prestations pour <b>${currentRoom}</b></h2>
-        <div class='grid'>
-          ${services.map(s => `
-            <button class="${selectedServices[currentRoom]?.includes(s) ? '' : 'secondary'}" onclick="toggleService('${currentRoom}','${s}')">${s}</button>`).join('')}
+    <div id="panel" class="panel" style="display:none">
+      <div id="panelTitle" style="font-weight:700;margin-bottom:8px"></div>
+      <div id="choices"></div>
+      <div style="margin-top:12px">
+        <label>Surface approximative (m²)</label>
+        <input type="number" id="surface" min="0" step="0.5" value="10">
+      </div>
+      <div style="margin-top:8px">
+        <label>État</label>
+        <div class="row">
+          <button onclick="setEtat('neuf')">🆕 Neuf</button>
+          <button onclick="setEtat('renov')">⚒️ À rénover</button>
+          <button onclick="setEtat('demo')">💥 Dépose</button>
         </div>
-        <button onclick="validateRoom()">Valider cette pièce</button>
-      </div>`;
-    return;
-  }
+      </div>
 
-  // Étape 3 — Coordonnées
-  if (step === 3) {
-    app.innerHTML = `
-      <div class='card'>
-        <h2>Vos coordonnées</h2>
-        <input placeholder='Nom' value='${clientInfo.nom}' onchange="clientInfo.nom=this.value" />
-        <input placeholder='Téléphone' value='${clientInfo.telephone}' onchange="clientInfo.telephone=this.value" />
-        <input placeholder='Email' value='${clientInfo.email}' onchange="clientInfo.email=this.value" />
-        <button onclick="next()">Générer mon devis</button>
-      </div>`;
-    return;
-  }
+      <div style="margin-top:8px">
+        <label>Gamme</label>
+        <div class="row">
+          <button onclick="setRange('eco')">🌿 Éco</button>
+          <button onclick="setRange('std')">⭐ Standard</button>
+          <button onclick="setRange('prem')">💎 Premium</button>
+        </div>
+      </div>
 
-  // Étape 4 — Récapitulatif
-  app.innerHTML = `
-    <div class='card'>
-      <h2>🎉 Votre devis est prêt</h2>
-      ${selectedRooms.map(room => `
-        <div class='room-block'>
-          <b>${room}</b>
-          <ul>${(selectedServices[room]||[]).map(s => `<li>${s}</li>`).join('')}</ul>
-        </div>`).join('')}
-      <button>Télécharger le PDF</button>
-      <button class='secondary'>Envoyer par email</button>
-      <button>Appeler Chouahib</button>
-    </div>`;
-}
+      <div style="margin-top:12px" class="summary">
+        <div>Estimation rapide</div>
+        <div id="estimation">— €</div>
+      </div>
 
-function next() { step++; render(); }
-function toggleRoom(room) {
-  if (selectedRooms.includes(room)) {
-    selectedRooms = selectedRooms.filter(r => r !== room);
-  } else selectedRooms.push(room);
-  render();
-}
-function toggleService(room, service) {
-  if (!selectedServices[room]) selectedServices[room] = [];
-  if (selectedServices[room].includes(service)) {
-    selectedServices[room] = selectedServices[room].filter(s => s !== service);
-  } else selectedServices[room].push(service);
-  render();
-}
-function validateRoom() {
-  const index = selectedRooms.indexOf(currentRoom) + 1;
-  if (index < selectedRooms.length) currentRoom = selectedRooms[index];
-  else next();
-  render();
-}
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="cta" onclick="calculate()">Calculer</button>
+        <button onclick="resetPanel()">Modifier</button>
+        <button onclick="exportPDF()">Télécharger PDF</button>
+      </div>
+    </div>
 
-render();
-</script>
+    <div id="log" style="margin-top:14px;color:#666;font-size:13px"></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    // Configuration de référence
+    const RATES = { hourly:55, travel:100, margin:0.35, wasteLevels:[20,40,60,80,120] };
+
+    let state = { piece:null, surface:10, etat:'neuf', range:'std' };
+
+    function choosePiece(p){
+      state.piece=p;
+      document.getElementById('panel').style.display='block';
+      document.getElementById('panelTitle').textContent = ({sdb:'Salle de bain',cui:'Cuisine',ch:'Chambre',sal:'Salon',cou:'Couloir',tec:'Technique'})[p];
+      document.getElementById('surface').value=state.surface;
+      log('Pièce sélectionnée: '+state.piece);
+    }
+    function setEtat(e){ state.etat=e; log('État: '+e); }
+    function setRange(r){ state.range=r; log('Gamme: '+r); }
+    function resetPanel(){ document.getElementById('panel').style.display='none'; }
+    function log(t){ document.getElementById('log').textContent=t }
+
+    function calculate(){
+      state.surface = parseFloat(document.getElementById('surface').value) || 0;
+      // Estimations heuristiques par m² selon poste (simple)
+      const unitTimePerM2 = { sdb:1.2, cui:1.0, ch:0.5, sal:0.6, cou:0.4, tec:0.8 };
+      const baseMatPerM2 = { sdb:70, cui:65, ch:20, sal:25, cou:15, tec:30 };
+      const multRange = { eco:0.9, std:1.0, prem:1.4 };
+
+      const timeHours = (unitTimePerM2[state.piece]||0.6) * state.surface;
+      const laborCost = Math.ceil(timeHours) * RATES.hourly;
+      const matCost = baseMatPerM2[state.piece]*state.surface*multRange[state.range];
+      const matWithMargin = Math.round(matCost*(1+RATES.margin));
+      const travel = RATES.travel; // simple: 1 jour
+      const waste = RATES.wasteLevels[Math.min(4, Math.floor(state.surface/10))];
+      const total = laborCost + matWithMargin + travel + waste;
+
+      document.getElementById('estimation').textContent = total.toLocaleString('fr-FR', {style:'currency',currency:'EUR'});
+      log(`Détails — Temps: ${timeHours.toFixed(1)}h, MO: ${laborCost}€, Mat: ${matWithMargin}€, Dépl: ${travel}€, Déchet: ${waste}€`);
+      // Save last calc
+      state.lastCalc = { timeHours, laborCost, matWithMargin, travel, waste, total };
+      return state.lastCalc;
+    }
+
+    async function exportPDF(){
+      if(!state.lastCalc){ calculate(); }
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFontSize(16); doc.text('ESTIMATION DE TRAVAUX', 14, 20);
+      doc.setFontSize(11); doc.text(`Client : (à remplir)` , 14, 30);
+      doc.text(`Intervention : ${document.getElementById('panelTitle').textContent}`, 14, 38);
+      doc.text(`Surface : ${state.surface} m²`, 14, 46);
+      doc.text(`Gamme : ${state.range}`, 14, 54);
+      doc.text('---', 14, 62);
+      let y=70;
+      doc.text(`Main d'œuvre : ${state.lastCalc.laborCost} €`, 14, y); y+=8;
+      doc.text(`Fournitures (+35%) : ${state.lastCalc.matWithMargin} €`, 14, y); y+=8;
+      doc.text(`Déplacement : ${state.lastCalc.travel} €`, 14, y); y+=8;
+      doc.text(`Déchetterie : ${state.lastCalc.waste} €`, 14, y); y+=12;
+      doc.setFontSize(13); doc.text(`TOTAL TTC : ${state.lastCalc.total} €`, 14, y);
+      doc.setFontSize(10); doc.text('Prestataire : Chouahib Benkherour — 06 68 77 19 23 — chouahib@gmail.com', 14, 270);
+      doc.save('estimation-travaux.pdf');
+    }
+  </script>
 </body>
 </html>
-
